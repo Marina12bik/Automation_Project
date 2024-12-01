@@ -6,6 +6,19 @@ const login = async (page, username, password) => {
   await page.locator('[data-test="login-button"]').click();
 };
 
+
+const runLoginTests = async (page, testCases) => {
+  for (const { username, password, expectedError } of testCases) {
+    await page.goto("https://www.saucedemo.com/");
+    await login(page, username, password);
+    await expect(page).toHaveURL("https://www.saucedemo.com/");
+  
+    const errorMessage = page.locator(".error-message-container");
+    await expect(errorMessage).toBeVisible();
+    await expect(errorMessage).toContainText(expectedError);
+  }
+};
+
 test.describe("Negative Tests, login with incorrect credentials", () => {
   test("Incorrect credentials", async ({ page }) => {
     const testCases = [
@@ -48,18 +61,8 @@ test.describe("Negative Tests, login with incorrect credentials", () => {
         expectedError: "Epic sadface: Username is required",
       },
     ];
-
-    for (const { username, password, expectedError } of testCases) {
-      await page.goto("https://www.saucedemo.com/");
-      await login(page, username, password);
-
-      await expect(page).toHaveURL("https://www.saucedemo.com/");
-
-      const errorMessage = page.locator(".error-message-container");
-      await expect(errorMessage).toBeVisible();
-      await expect(errorMessage).toContainText(expectedError);
-    }
+  
+    
+    await runLoginTests(page, testCases);
   });
 });
-
-// test
